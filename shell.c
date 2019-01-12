@@ -260,29 +260,7 @@ static void shell_cd( void) {
 
 static void shell_ls( void) {
     //should a system call print to the screen?
-  writeStr("Problem with ls\n");
-
-//Code/pseudocode you can use somewhere to get the same ls output as the tests
-//  writeStr("Name");
-//  print MAX_FILE_NAME - 3 spaces
-//  writeStr("Type");
-//  print 1 space
-//  writeStr("Inode");
-//  print 1 space
-//  writeStr("Size\n");
-
-
-//  writeStr(/*file name*/);
-//  print MAX_FILE_NAME - size of file name + 1 spaces
-//
-//  writeStr(/*condition*/ ? "D" : "F");
-//  print 4 spaces
-//
-//  writeInt(/*inode #*/);
-//  print 5 spaces
-//
-//  writeInt(/*file size*/);
-//  writeStr("\n");
+    fs_ls();
 }
 
 static void shell_link( void) {

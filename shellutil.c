@@ -75,3 +75,4 @@ writeInt( int i ) {
   itoa ( i, str );
   writeStr ( str );
 }
+

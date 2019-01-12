@@ -61,7 +61,7 @@ KERNEL			=	kernel.o
 COMMON			=	util.o
 # Processes to create
 PROCESSES		=	shell.o process1.o process2.o process3.o process4.o
-FAKESHELL_OBJS = shellFake.o shellutilFake.o utilFake.o fsFake.o blockFake.o
+FAKESHELL_OBJS = shellFake.o shellutilFake.o utilFake.o fsFake.o blockFake.o fs_helpersFake.o
 
 # Objects needed by the kernel
 # make sure the usbV86.o is last (and far away from interrupt.o). this
@@ -70,7 +70,7 @@ FAKESHELL_OBJS = shellFake.o shellutilFake.o utilFake.o fsFake.o blockFake.o
 # (otherwise a gpf will result)
 KERNELOBJ	=	thread.o mbox.o keyboard.o interrupt.o $(COMMON) \
 			scheduler.o memory.o entry.o \
-			sleep.o time.o fs.o block.o th1.o th2.o usb.o usbV86.o
+			sleep.o time.o fs.o block.o th1.o th2.o usb.o usbV86.o fs_helpers.o
 
 # Objects needed to build a process
 PROCOBJ			=	$(COMMON) syslib.o
@@ -159,6 +159,9 @@ utilFake.o : util.c
 
 fsFake.o : fs.c
 	$(CC) -Wall $(CFLAGS) -g -c -DFAKE -o fsFake.o fs.c
+
+fs_helpersFake.o: fs_helpers.c
+	$(CC) -Wall $(CFLAGS) -g -c -DFAKE -o fs_helpersFake.o fs_helpers.c
 
 # Figure out dependencies, and store them in the hidden file .depend
 depend: .depend

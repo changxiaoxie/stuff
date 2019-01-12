@@ -188,14 +188,17 @@ def test_get_all_handles():
     issue('cd d1')
     for x in range(0,100):
         issue('open f' + str(x) + ' 3')
+    issue('ls')
     issue('cd ..')
     issue('cd d2')
     for x in range(0,100):
         issue('open f' + str(x) + ' 3')
+    issue('ls')
     issue('cd ..')
     issue('cd d3')        
     for x in range(0,60):
         issue('open f' + str(x) + ' 3') #should fail after file handle 255
+    issue('ls')
     print('***************')
     print do_exit()
     sys.stdout.flush()
@@ -224,7 +227,7 @@ def get_inodes(n):
 def test_get_all_inodes():
     print('*****Get All Inodes Test*****')
     # Change this variable if your file system has fewer than 2048 inodes
-    numInodes = 1754
+    numInodes = 1537 # should fail numInodes - 1535 times
     
     issue('mkfs')
     get_inodes(numInodes)

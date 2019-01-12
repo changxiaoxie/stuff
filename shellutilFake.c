@@ -43,3 +43,10 @@ writeStr( char *s) {
     }
 }
 
+void 
+writeInt( int i ) {
+  char str[10];
+  itoa ( i, str );
+  writeStr ( str );
+}
+
