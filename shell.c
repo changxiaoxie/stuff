@@ -1,6 +1,6 @@
 /*
- * Author(s): <Your name here>
- * COS 318, Fall 2015: Project 6 File System.
+ * Author(s): Changxiao Xie
+ * COS 318, Fall 2018: Project 6 File System.
  * Implementation of a Unix-like file system.
 */
 #include "util.h"
@@ -170,15 +170,15 @@ static void shell_create( void) {
     if ((fd = fs_open(argv[1], FS_O_RDWR)) == -1)
 	writeStr("Error creating file");
     for(i=0; i < atoi(argv[2]); i++) {
-	letter[0] = 'A' + (i % 37);
-	if(fs_write(fd, letter, 1) == 0)
-	  // error with fs_write
-	  break;
-	if ((i+1) % 40 == 0) {
-	    letter[0] = RETURN;
-	    if (fs_write(fd, letter, 1) == 0)
-		break;
-	}
+	    letter[0] = 'A' + (i % 37);
+	    if(fs_write(fd, letter, 1) == 0)
+	    // error with fs_write
+	        break;
+	    if ((i+1) % 40 == 0) {
+	        letter[0] = RETURN;
+	        if (fs_write(fd, letter, 1) == 0)
+		    break;
+	    }
     }
     fs_close(fd);
 }

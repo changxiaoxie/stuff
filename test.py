@@ -188,17 +188,14 @@ def test_get_all_handles():
     issue('cd d1')
     for x in range(0,100):
         issue('open f' + str(x) + ' 3')
-    issue('ls')
     issue('cd ..')
     issue('cd d2')
     for x in range(0,100):
         issue('open f' + str(x) + ' 3')
-    issue('ls')
     issue('cd ..')
     issue('cd d3')        
     for x in range(0,60):
         issue('open f' + str(x) + ' 3') #should fail after file handle 255
-    issue('ls')
     print('***************')
     print do_exit()
     sys.stdout.flush()
@@ -258,7 +255,6 @@ def all_blocks_test():
     for i in range(0, 113):
     	# Should fail after 1 MB - size of metadata
     	issue('create f' + str(i) + ' 4096') # Max file size is 8*512
-    
     print do_exit();
     print('***************')
     sys.stdout.flush()

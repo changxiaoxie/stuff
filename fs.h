@@ -1,6 +1,6 @@
 /*
- * Author(s): <Your name here>
- * COS 318, Fall 2015: Project 6 File System.
+ * Author(s): Changxiao Xie
+ * COS 318, Fall 2018: Project 6 File System.
  * Implementation of a Unix-like file system.
 */
 #ifndef FS_INCLUDED

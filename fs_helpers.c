@@ -1,8 +1,12 @@
+/*
+ * Author(s): Changxiao Xie
+ * COS 318, Fall 2018: Project 6 File System.
+ * Implementation of a Unix-like file system.
+*/
 #include "util.h"
 #include "common.h"
 #include "block.h"
 #include "fs_helpers.h"
-#include "shellutil.h"
 
 #ifdef FAKE
 #include <stdio.h>
@@ -319,13 +323,14 @@ int dir_find(int dir_inode_num, char *name, super_block_t *super_block) {
 // FILE DESCRIPTOR STUFF
 
 // open a file descriptor with the given inode and permissions
-int fd_open(file_t *fd_table, int inode, int permissions) {
+int fd_open(file_t *fd_table, int inode, int permissions, int directory) {
     int i;
     for (i = 0; i < MAX_FILE_DESCRIPTORS; i++) {
         if (fd_table[i].open == FALSE) {
             fd_table[i].open = TRUE;
             fd_table[i].permissions = permissions;
             fd_table[i].inode = inode;
+            fd_table[i].directory = directory;
             fd_table[i].position = 0;
             return i;
         }
@@ -336,4 +341,15 @@ int fd_open(file_t *fd_table, int inode, int permissions) {
 // close a file descriptor with the given index
 void fd_close(file_t *fd_table, int fd_index) {
     fd_table[fd_index].open = FALSE;
+}
+
+// search in fd_table for files with the specific directory
+int fd_dir_search(file_t *fd_table, int directory) {
+    int i;
+    for (i = 0; i < MAX_FILE_DESCRIPTORS; i++) {
+        if (fd_table[i].open == TRUE && fd_table[i].directory == directory) {
+            return 0;
+        }
+    }
+    return -1;
 }

@@ -1,6 +1,6 @@
 /*
- * Author(s): <Your name here>
- * COS 318, Fall 2015: Project 6 File System.
+ * Author(s): Changxiao Xie
+ * COS 318, Fall 2018: Project 6 File System.
  * Implementation of a Unix-like file system.
 */
 #include "util.h"
@@ -39,12 +39,12 @@ void fs_init( void) {
     super_block = super_block_read(super_block_buffer);
     if (super_block->magic_num == MAGIC_NUM) {
         working_directory = ROOT_DIRECTORY;
+        // initialize file descriptor table
+        bzero((char *)fd_table, sizeof(fd_table));
     }
     else {
         fs_mkfs();
     }
-    // initialize file descriptor table
-    bzero((char *)fd_table, sizeof(fd_table));
 }
 
 int fs_mkfs( void) {
@@ -85,6 +85,9 @@ int fs_mkfs( void) {
         return -1;
     }
 
+    // initialize file descriptor table
+    bzero((char *)fd_table, sizeof(fd_table));
+
     return 0;
 }
 
@@ -105,7 +108,7 @@ int fs_open( char *fileName, int flags) {
     if (file_inode_num != -1) {
         file_inode = inode_read(block_buffer, file_inode_num, super_block);
         if (file_inode->type == TYPE_DIRECTORY && flags != FS_O_RDONLY) { return -1; }
-        status = fd_open(fd_table, file_inode_num, flags);
+        status = fd_open(fd_table, file_inode_num, flags, working_directory);
         if (status == -1) { return -1; }
         file_inode->fd_count++;
         inode_write(block_buffer, file_inode_num, super_block);
@@ -120,7 +123,7 @@ int fs_open( char *fileName, int flags) {
 
         file_inode = inode_read(block_buffer, file_inode_num, super_block);
         inode_init(file_inode, TYPE_FILE);
-        status = fd_open(fd_table, file_inode_num, flags);
+        status = fd_open(fd_table, file_inode_num, flags, working_directory);
         if (status == -1) {
             inode_free(file_inode_num, super_block);
             return -1;
@@ -175,6 +178,7 @@ static int fs_read_helper(int position, inode_t *file_inode, char *buf, int coun
     int downcount;
     char data_block_buffer[BLOCK_SIZE];
     char *block_pointer;
+    int size;
 
     upcount = 0; // how much we just read
     downcount = count; // how much left to read
@@ -195,13 +199,19 @@ static int fs_read_helper(int position, inode_t *file_inode, char *buf, int coun
 
         // if cursor is not 0 and we are on the last block with data
         if (cursor != 0 && data_block_index == data_block_max - 1) {
+            if ((file_inode->size % BLOCK_SIZE == 0) && (file_inode->size / BLOCK_SIZE == data_block_max)) {
+                size = BLOCK_SIZE;
+            }
+            else {
+                size = file_inode->size % BLOCK_SIZE;
+            }
             // case where amount we want to read is less than the remaining file size
-            if (downcount <= ((file_inode->size % BLOCK_SIZE) - cursor)) {
+            if (downcount <= (size - cursor)) {
                 bytes = downcount;
             }
             // case where amount we want to read is greater than remaining file size
             else {
-                bytes = file_inode->size % BLOCK_SIZE - cursor;
+                bytes = size - cursor;
             }
         }
         // if cursor is not 0 and we want to read less than the remainder of this block
@@ -214,13 +224,19 @@ static int fs_read_helper(int position, inode_t *file_inode, char *buf, int coun
         }
         // if we are on the last block with data
         else if (data_block_index == data_block_max - 1) {
+            if ((file_inode->size % BLOCK_SIZE == 0) && (file_inode->size / BLOCK_SIZE == data_block_max)) {
+                size = BLOCK_SIZE;
+            }
+            else {
+                size = file_inode->size % BLOCK_SIZE;
+            }
             // case where amount we want to read is less than remaining file size
-            if (downcount <= (file_inode->size % BLOCK_SIZE)) {
+            if (downcount <= size) {
                 bytes = downcount;
             }
             // case where amount we want to read is greater than remaining file size
             else {
-                bytes = file_inode->size % BLOCK_SIZE;
+                bytes = size;
             }
         }
         // if we want to read less than this block
@@ -480,6 +496,9 @@ int fs_rmdir( char *fileName) {
     if (inode->type != TYPE_DIRECTORY) { return -1; }
     if (inode->size != 2 * sizeof(directory_entry_t)) { return -1; }
 
+    // check if the file descriptor table has any file descriptors for this directory
+    if (fd_dir_search(fd_table, inode_num) == 0) { return -1; }
+
     // remove the directory
     dir_remove(working_directory, fileName, super_block);
 
@@ -623,7 +642,7 @@ void fs_ls( void) {
 
     directory_inode = inode_read(dir_block_buffer, working_directory, super_block);
     block_max = directory_inode->in_use_blocks;
-    
+
     writeStr("Name                             Type Inode Size\n");
 
     for (block_index = 0; block_index < block_max; block_index++) {
